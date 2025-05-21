@@ -3,13 +3,23 @@
 
 #include <QWidget>
 
-class Qipan : public QWidget
+class qipan : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Qipan(QWidget *parent = nullptr);
-
+    explicit qipan(QWidget *parent = nullptr);
+protected:
+    // 绘画事件
+    void paintEvent(QPaintEvent* event) override;
 signals:
+    public slots:
+private:
+    // 棋盘尺寸
+    static const int m_boardSize=15;
+    // 方块格子尺寸
+    static const int m_cellSize=40;
+    // 棋盘距离边缘的距离
+    static const int m_margin=20;
 };
 
 #endif // QIPAN_H
