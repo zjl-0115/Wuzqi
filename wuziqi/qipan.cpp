@@ -184,7 +184,7 @@ bool QiPan::isCheckWin(int row,int col,ROLE role)
             }
         }
 
-        if(cnt==5){
+        if(cnt>=5){
             is=true;
             break;
         }
