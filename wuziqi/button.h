@@ -15,8 +15,10 @@ public:
 private:
     QPushButton *btn1;
     QPushButton *btn2;
+    QPushButton *btn3;
 signals:
     void doublePlayerClicked();
+    void computerPlayerClicked();
 };
 
 #endif // BUTTON_H
