@@ -19,6 +19,7 @@ private:
 signals:
     void doublePlayerClicked();
     void computerPlayerClicked();
+
 };
 
 #endif // BUTTON_H
