@@ -3,11 +3,21 @@
 #include<QDebug>
 #include<QMessageBox>
 
+
+
+    // 快捷键
+    // ctrl+f  查找
+    // F4      .cpp和.h切换
+    // F1      帮助文档
+
+
 QiPan::QiPan(QWidget *parent)
     : QWidget{parent},
     m_hoverRow(-1),
     m_hoverCol(-1),
-    m_hoverFlag(false)
+    m_hoverFlag(false),
+    m_gameMode(SINGLE_PLAYER),
+    m_currentPlayer(PLAYER)
 {
     for(int idx=0;idx<m_boardSize;idx++){
         for(int jdx=0;jdx<m_boardSize;jdx++){
@@ -16,6 +26,37 @@ QiPan::QiPan(QWidget *parent)
     }
     // 设置鼠标追踪
     setMouseTracking(true);
+
+}
+
+// 开始双人游戏
+void QiPan::startDoublePlayerGame()
+{
+    // 重置棋盘
+    for(int idx=0;idx<m_boardSize;idx++){
+        for(int jdx=0;jdx<m_boardSize;jdx++){
+            m_board[idx][jdx]=EMPTY;
+        }
+    }
+
+    m_gameMode = DOUBLE_PLAYER;
+    m_currentPlayer = PLAYER; // 玩家1先手
+    update();
+}
+
+// 开始人机游戏
+void QiPan::startComputerGame()
+{
+    // 重置棋盘
+    for(int idx=0;idx<m_boardSize;idx++){
+        for(int jdx=0;jdx<m_boardSize;jdx++){
+            m_board[idx][jdx]=EMPTY;
+        }
+    }
+
+    m_gameMode = SINGLE_PLAYER;
+    m_currentPlayer = PLAYER; // 玩家先手
+    update();
 }
 
 // 绘画事件
@@ -59,7 +100,7 @@ void QiPan::paintEvent(QPaintEvent *event)
                 painter.drawEllipse(QPoint(m_margin+r*m_cellSize,m_margin+c*m_cellSize),
                                     m_cellSize/3,m_cellSize/3);
             }
-            else if(m_board[r][c]==COMPUTER){
+            else if(m_board[r][c]==COMPUTER||m_board[r][c]==PLAYER2){
                 // 设置笔刷
                 painter.setBrush(Qt::white);
                 painter.drawEllipse(QPoint(m_margin+r*m_cellSize,m_margin+c*m_cellSize),
@@ -70,6 +111,12 @@ void QiPan::paintEvent(QPaintEvent *event)
             }
         }
     }
+
+    //显示当前玩家
+    painter.setPen(Qt::black);
+    painter.setFont(QFont("Arial", 12));
+    QString currentPlayerText = m_currentPlayer == PLAYER ? "当前：玩家1 (黑棋)" : "当前：玩家2 (白棋)";
+    painter.drawText(10, 20, currentPlayerText);
 }
 
 // 鼠标移动事件
@@ -104,6 +151,7 @@ void QiPan::mouseMoveEvent(QMouseEvent *event)
 // 鼠标点击事件
 void QiPan::mousePressEvent(QMouseEvent *event)
 {
+    if(m_gameMode!=DOUBLE_PLAYER) return;
     int row = (event->position().x()-m_margin+(m_cellSize/2))/m_cellSize;
     int col = (event->position().y()-m_margin+(m_cellSize/2))/m_cellSize;
 
@@ -113,18 +161,29 @@ void QiPan::mousePressEvent(QMouseEvent *event)
         m_board[row][col]==EMPTY)
     {
         // 插入数据
-        m_board[row][col]=PLAYER;
+        m_board[row][col]=m_currentPlayer;
 
         // 手动更新绘画事件
         update();
 
         // 判断玩家是否获胜
-       bool res=isCheckWin(row,col,PLAYER);
+       bool res=isCheckWin(row,col,m_currentPlayer);
         if(res==true)
        {
-           QMessageBox::information(this,"游戏结束","玩家获胜");
+           QString winner=(m_currentPlayer==PLAYER)?"玩家1获胜":"玩家2获胜";
+           QMessageBox::information(this,"游戏结束",winner);
+           return;
         }
+        //切换玩家
+        switchPlayer();
+
     }
+}
+
+//切换玩家
+void QiPan::switchPlayer()
+{
+    m_currentPlayer=(m_currentPlayer==PLAYER)?PLAYER2:PLAYER;
 }
 
 // 判断用户是否获胜
