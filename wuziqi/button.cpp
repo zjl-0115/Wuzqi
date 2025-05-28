@@ -20,9 +20,10 @@ Button::Button(QiPan* qipan, QWidget *parent)
     btn3->setFixedSize(80,40);
 
     // 连接按钮点击信号到自定义信号
-    connect(btn2, &QPushButton::clicked, this, &Button::doublePlayerClicked);
+    connect(btn1, &QPushButton::clicked, this, &Button::doublePlayerClicked);
     connect(btn2, &QPushButton::clicked, this, &Button::computerPlayerClicked);
     connect(btn3, &QPushButton::clicked, parent, &QWidget::close);
+
 
     }
 
