@@ -1,8 +1,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
 #include "qipan.h"
+#include <QMainWindow>
+#include"button.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -21,6 +22,8 @@ public:
 private:
     Ui::MainWindow *ui;
     // 棋盘类
-    qipan * m_qipan;
+    QiPan * m_qipan;
+    // 按钮类
+    Button * m_button;
 };
 #endif // MAINWINDOW_H
