@@ -57,7 +57,20 @@ Button::Button(QiPan* qipan, QWidget *parent)
     });
     connect(btn5,&QPushButton::clicked, this,[=](){
         btn5->setText("正在读取");
-
+        QString filePath=QFileDialog::getOpenFileName(
+            qipan,"读取对局",QDir::homePath(),"五子棋对局文件(*.gobang *.txt)"
+            );
+        if(!filePath.isEmpty()){
+            if(qipan->loadGame(filePath)){
+                btn5->setText("读取成功");
+                QTimer::singleShot(1500,this, [this](){ btn5->setText("读取对局"); });
+            }else {
+                btn5->setText("读取失败");
+                QTimer::singleShot(1500,this, [this](){ btn5->setText("读取对局"); });
+            }
+        }else {
+            btn5->setText("读取对局");
+        }
 
     });
 
