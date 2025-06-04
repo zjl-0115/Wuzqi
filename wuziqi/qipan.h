@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QMouseEvent>
-#include "stdShared.h"
+#include "stdShare.h"
 
 class QiPan : public QWidget
 {
@@ -20,17 +20,19 @@ protected:
 
 private:
     // 判断用户是否获胜
-    bool isCheckWin(int row,int col,ROLE role);
+    bool isCheckWin(int row, int col, ROLE role);
     //切换玩家
     void switchPlayer();
+    // 计算机落子
+    void computerMove();
 
 private:
     // 棋盘尺寸
-    static const int m_boardSize=15;
+    static const int m_boardSize = 15;
     // 方块格子尺寸
-    static const int m_cellSize=40;
+    static const int m_cellSize = 40;
     // 棋盘距离边缘的距离
-    static const int m_margin=20;
+    static const int m_margin = 20;
 
     // 棋盘上的点
     ROLE m_board[m_boardSize][m_boardSize];
