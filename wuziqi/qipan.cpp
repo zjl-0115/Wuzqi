@@ -61,6 +61,76 @@ bool QiPan::saveGame(const QString& filePath){
 
 }
 
+//读取对局
+bool QiPan::loadGame(const QString& filePath)
+{
+    QFile file(filePath);
+    if(!file.open(QIODevice::ReadOnly|QIODevice::Text)){
+        qDebug()<<"无法打开文件"<<filePath;
+        return false;
+    }
+
+    QTextStream in(&file);
+    QString line;
+
+    for(int i=0; i<m_boardSize; i++){
+        for(int j=0; j<m_boardSize; j++){
+            m_board[i][j] = EMPTY;
+        }
+    }
+    //读取游戏模式
+    line=in.readLine();
+    if(!line.startsWith("Mode:")){
+        qDebug()<<"无效的文件格式：找不到模式信息";
+        file.close();
+        return false;
+    }
+    QString modeStr=line.split(":").at(1).trimmed();
+    m_gameMode=(modeStr == "SINGLE") ? SINGLE_PLAYER : DOUBLE_PLAYER;
+
+    // 读取当前玩家
+    line = in.readLine();
+    if(!line.startsWith("CurrentPlayer:")){
+        qDebug()<<"无效的文件格式：找不到当前玩家信息";
+        file.close();
+        return false;
+    }
+    QString playerStr = line.split(":").at(1).trimmed();
+    if(m_gameMode == DOUBLE_PLAYER){
+        m_currentPlayer = (playerStr == "PLAYER1") ? PLAYER : PLAYER2;
+    } else {
+        m_currentPlayer = (playerStr == "PLAYER") ? PLAYER : COMPUTER;
+    }
+
+    // 读取棋盘大小(m_boardSize为静态常量整数，暂时不改动）
+   /* line = in.readLine();
+    if(line.startsWith("BoardSize:")){
+        int size = line.split(":").at(1).trimmed().toInt();
+        if(size > 0 && size <= 20) // 确保棋盘大小合理
+            m_boardSize = size;
+    }*/
+
+    //找到棋盘数据开始行
+    while(!in.atEnd()){
+        line = in.readLine();
+        if(line.startsWith("Board:"))
+            break;
+    }
+
+    //读取棋盘状态
+    for(int i=0;i<m_boardSize&&!in.atEnd();i++){
+        line = in.readLine();
+        QStringList tokens = line.split(" ");
+        for(int j=0; j<m_boardSize && j<tokens.size(); j++){
+            int value = tokens[j].toInt();
+            if(value >= EMPTY && value <= COMPUTER)
+                m_board[i][j] = static_cast<ROLE>(value);
+        }
+    }
+    file.close();
+    update(); // 更新界面显示
+    return true;
+}
 
 // 开始双人游戏
 void QiPan::startDoublePlayerGame()
