@@ -16,9 +16,10 @@ private:
     QPushButton *btn1;
     QPushButton *btn2;
     QPushButton *btn3;
+    QPushButton *btn4;
 signals:
     void doublePlayerClicked();
-    void computerPlayerClicked();
+    void computerPlayerClicked(bool computerFirst);
 
 };
 
