@@ -5,7 +5,7 @@
 #include <QMouseEvent>
 #include<QFile>
 #include<QTextStream>
-
+#include<QTimer>
 #include "stdShared.h"
 
 class QiPan : public QWidget
@@ -34,7 +34,6 @@ private:
     // 计算机落子
     void computerMove();
 
-private:
     // 棋盘尺寸
     static const int m_boardSize=15;
     // 方块格子尺寸
