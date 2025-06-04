@@ -9,7 +9,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-
     // 设置窗口标题
     setWindowTitle("五子棋");
     // 设置窗口固定大小
@@ -18,14 +17,11 @@ MainWindow::MainWindow(QWidget *parent)
     m_qipan=new QiPan(this);
     // 创建按钮面板，传入棋盘指针
     m_button = new Button(m_qipan, this);
-    // // 创建按钮对象
-    // m_button= new Button(m_qipan,this);
     // 设置布局
     QWidget* centerWidget=new QWidget(this);
     setCentralWidget(centerWidget);
     QVBoxLayout* layout = new QVBoxLayout(centerWidget);
     layout->addWidget(m_qipan);
-
 
     //连接信号和槽
     connect(m_button,&Button::doublePlayerClicked,
