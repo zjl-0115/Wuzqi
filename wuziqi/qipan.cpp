@@ -2,8 +2,10 @@
 #include "stdShared.h"
 #include<QPainter>
 #include<QDebug>
+#include <QPushButton>
 #include<QMessageBox>
 #include <QRandomGenerator>
+#include <qapplication.h>
 
 
     // 快捷键
@@ -184,6 +186,7 @@ void QiPan::paintEvent(QPaintEvent *event)
 
     // 绘制悬停点
     if(m_hoverFlag==true&&
+       m_gameMode!=NONE&&
        m_hoverRow>=0&& m_hoverRow<m_boardSize&&
        m_hoverCol>=0&&m_hoverCol<m_boardSize&&
        m_board[m_hoverRow][m_hoverCol]==EMPTY)
@@ -291,7 +294,7 @@ void QiPan::mousePressEvent(QMouseEvent *event)
         if(res==true)
        {
            QString winner=(m_currentPlayer==PLAYER)?"玩家1获胜":"玩家2获胜";
-           QMessageBox::information(this,"游戏结束",winner);
+           showGameOverDialog(winner);
            return;
         }
         //切换玩家
@@ -313,7 +316,7 @@ void QiPan::mousePressEvent(QMouseEvent *event)
             bool res = isCheckWin(row, col, m_currentPlayer);
             if (res == true)
             {
-                QMessageBox::information(this, "游戏结束", "玩家获胜");
+                showGameOverDialog("人机获胜！");
                 return;
             }
             switchPlayer();
@@ -404,6 +407,53 @@ bool QiPan::isCheckWin(int row,int col,ROLE role)
     }
 }
 
+//游戏结束对话框
+void QiPan::showGameOverDialog(const QString& winner) {
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("游戏结束");
+    msgBox.setText(winner);
+    msgBox.setIcon(QMessageBox::Information);
+    //自定义按钮
+    QPushButton* retryBtn=msgBox.addButton("再来一局",QMessageBox::ActionRole);
+    QPushButton* closeBtn=msgBox.addButton("退出游戏",QMessageBox::RejectRole);
+    msgBox.setDefaultButton(retryBtn);
+
+    msgBox.setDetailedText("详细信息：当前对局已结束");
+    msgBox.exec();
+
+    if (msgBox.clickedButton()==retryBtn) {
+        resetGame(); // 重新开始游戏
+    } else if (msgBox.clickedButton() == closeBtn) {
+        // 退出游戏（可根据需求关闭窗口或应用程序）
+        QApplication::closeAllWindows();
+        /*if (QWidget *parentWidget = qobject_cast<QWidget*>(parent())) {
+            parentWidget->close();  // 关闭父窗口
+        } else {
+            close(); // 关闭当前棋盘窗口
+        }*/
+    }
+
+}
+
+//重置棋盘
+void QiPan::resetGame() {
+    //重置棋盘
+    for(int i=0;i<m_boardSize;i++){
+        for(int j=0;j<m_boardSize;j++){
+            m_board[i][j]=EMPTY;
+        }
+    }
+
+    if (m_gameMode == DOUBLE_PLAYER) {
+        m_currentPlayer = PLAYER; // 玩家1先手
+    } else if (m_gameMode == SINGLE_PLAYER) {
+        m_currentPlayer = PLAYER; // 玩家先手
+    }
+
+    update();
+}
+
+
 //计算机随机落子
 void QiPan::computerMove() {
     // 收集所有空位置
@@ -428,7 +478,7 @@ void QiPan::computerMove() {
         // 检查胜负
         bool res = isCheckWin(row, col, COMPUTER);
         if (res) {
-            QMessageBox::information(this, "游戏结束", "人机获胜");
+            showGameOverDialog("人机获胜！");
             return;
         }
         switchPlayer();
