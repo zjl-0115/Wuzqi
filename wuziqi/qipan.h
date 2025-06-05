@@ -29,6 +29,10 @@ protected:
 private:
     // 判断用户是否获胜
     bool isCheckWin(int row,int col,ROLE role);
+    //自定义游戏结束对话框
+    void showGameOverDialog(const QString& winner);
+    //重置游戏
+    void resetGame();
     //切换玩家
     void switchPlayer();
     // 计算机落子
