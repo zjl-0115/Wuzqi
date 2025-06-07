@@ -319,7 +319,7 @@ void QiPan::mousePressEvent(QMouseEvent *event)
             bool res = isCheckWin(row, col, m_currentPlayer);
             if (res == true)
             {
-                showGameOverDialog("人机获胜！");
+                showGameOverDialog("玩家获胜！");
                 return;
             }
             switchPlayer();
