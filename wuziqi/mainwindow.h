@@ -26,4 +26,5 @@ private:
     // 按钮类
     Button * m_button;
 };
+
 #endif // MAINWINDOW_H
