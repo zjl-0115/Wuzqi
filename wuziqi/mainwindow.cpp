@@ -1,6 +1,11 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "button.h"
+#include "qipan.h"
+
+
 // 垂直布局
+
 #include<QVBoxLayout>
 
 MainWindow::MainWindow(QWidget *parent)
