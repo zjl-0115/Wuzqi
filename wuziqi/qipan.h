@@ -18,6 +18,7 @@ public:
     //从文件读取对局
     bool loadGame(const QString& filePath);
 
+
 protected:
     // 绘画事件
     void paintEvent(QPaintEvent* event) override;
@@ -58,12 +59,19 @@ private:
     int m_hoverCol;
     // 是否需要绘制悬停点
     bool m_hoverFlag;
+    int m_difficulty; // 新增：难度参数（0=初级，1=高级）
+    QPoint findBestMove(); // 新增：高级难度 AI 算法
+    bool checkLine(int row, int col, int dr, int dc, ROLE role, int count); // 辅助判断连珠
+    bool checkObstruction(int row, int col, int dr, int dc, ROLE role);
+    bool isOpenEnd(int row, int col, int dr, int dc, ROLE role);
+
 
 signals:
 
 public slots:
     void startDoublePlayerGame();  // 开始双人游戏
-    void startComputerGame();      // 开始人机游戏
+    //void startComputerGame();    // 开始人机游戏
+    void startComputerGame(int difficulty); // 新增：带难度参数的开始函数
 };
 
 #endif // QIPAN_H
