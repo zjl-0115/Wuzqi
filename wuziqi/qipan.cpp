@@ -6,12 +6,13 @@
 #include<QMessageBox>
 #include <QRandomGenerator>
 #include <qapplication.h>
+#include <algorithm> // 用于 AI 算法排序
 
 
-    // 快捷键
-    // ctrl+f  查找
-    // F4      .cpp和.h切换
-    // F1      帮助文档
+// 快捷键
+// ctrl+f  查找
+// F4      .cpp和.h切换
+// F1      帮助文档
 
 
 QiPan::QiPan(QWidget *parent)
@@ -20,7 +21,8 @@ QiPan::QiPan(QWidget *parent)
     m_hoverCol(-1),
     m_hoverFlag(false),
     m_gameMode(NONE),
-    m_currentPlayer(PLAYER)
+    m_currentPlayer(PLAYER),
+    m_difficulty(0)
 {
     for(int idx=0;idx<m_boardSize;idx++){
         for(int jdx=0;jdx<m_boardSize;jdx++){
@@ -105,7 +107,7 @@ bool QiPan::loadGame(const QString& filePath)
     }
 
     // 读取棋盘大小(m_boardSize为静态常量整数，暂时不改动）
-   /* line = in.readLine();
+    /* line = in.readLine();
     if(line.startsWith("BoardSize:")){
         int size = line.split(":").at(1).trimmed().toInt();
         if(size > 0 && size <= 20) // 确保棋盘大小合理
@@ -150,8 +152,9 @@ void QiPan::startDoublePlayerGame()
 }
 
 // 开始人机游戏
-void QiPan::startComputerGame()
+void QiPan::startComputerGame(int difficulty)
 {
+    m_difficulty = difficulty;
     // 重置棋盘
     for(int idx=0;idx<m_boardSize;idx++){
         for(int jdx=0;jdx<m_boardSize;jdx++){
@@ -186,10 +189,10 @@ void QiPan::paintEvent(QPaintEvent *event)
 
     // 绘制悬停点
     if(m_hoverFlag==true&&
-       m_gameMode!=NONE&&
-       m_hoverRow>=0&& m_hoverRow<m_boardSize&&
-       m_hoverCol>=0&&m_hoverCol<m_boardSize&&
-       m_board[m_hoverRow][m_hoverCol]==EMPTY)
+        m_gameMode!=NONE&&
+        m_hoverRow>=0&& m_hoverRow<m_boardSize&&
+        m_hoverCol>=0&&m_hoverCol<m_boardSize&&
+        m_board[m_hoverRow][m_hoverCol]==EMPTY)
     {
         // 设置笔刷
         painter.setBrush(Qt::red);
@@ -275,31 +278,31 @@ void QiPan::mousePressEvent(QMouseEvent *event)
 {
     //双人对战
     if(m_gameMode==DOUBLE_PLAYER) {
-    int row = (event->position().x()-m_margin+(m_cellSize/2))/m_cellSize;
-    int col = (event->position().y()-m_margin+(m_cellSize/2))/m_cellSize;
+        int row = (event->position().x()-m_margin+(m_cellSize/2))/m_cellSize;
+        int col = (event->position().y()-m_margin+(m_cellSize/2))/m_cellSize;
 
-    // 判断鼠标点击是否在棋盘内部
-    if(row>=0&&row<m_boardSize&&
-        col>=0&&col<m_boardSize&&
-        m_board[row][col]==EMPTY)
-      {
-        // 插入数据
-        m_board[row][col]=m_currentPlayer;
+        // 判断鼠标点击是否在棋盘内部
+        if(row>=0&&row<m_boardSize&&
+            col>=0&&col<m_boardSize&&
+            m_board[row][col]==EMPTY)
+        {
+            // 插入数据
+            m_board[row][col]=m_currentPlayer;
 
-        // 手动更新绘画事件
-        update();
+            // 手动更新绘画事件
+            update();
 
-        // 判断玩家是否获胜
-       bool res=isCheckWin(row,col,m_currentPlayer);
-        if(res==true)
-       {
-           QString winner=(m_currentPlayer==PLAYER)?"玩家1获胜":"玩家2获胜";
-           showGameOverDialog(winner);
-           return;
+            // 判断玩家是否获胜
+            bool res=isCheckWin(row,col,m_currentPlayer);
+            if(res==true)
+            {
+                QString winner=(m_currentPlayer==PLAYER)?"玩家1获胜":"玩家2获胜";
+                showGameOverDialog(winner);
+                return;
+            }
+            //切换玩家
+            switchPlayer();
         }
-        //切换玩家
-        switchPlayer(); 
-      }
     }
     //人机对战
     else if (m_gameMode == SINGLE_PLAYER && m_currentPlayer == PLAYER) {
@@ -341,12 +344,12 @@ bool QiPan::isCheckWin(int row,int col,ROLE role)
 {
     // 四个方向
     int direction[4][2]=
-    {
-        {1,0},
-        {0,1},
-        {1,-1},
-        {1,1},
-        };
+        {
+         {1,0},
+         {0,1},
+         {1,-1},
+         {1,1},
+         };
 
 
     bool is=false;
@@ -467,20 +470,134 @@ void QiPan::computerMove() {
     }
     // 若有可落子位置
     if (!emptyPositions.isEmpty()) {
-        // 生成随机索引
-        int index = QRandomGenerator::global()->bounded(emptyPositions.size());
-        QPoint pos = emptyPositions[index];
+        QPoint pos;
+        if (m_difficulty == 0) { // 初级：随机落子
+            int index = QRandomGenerator::global()->bounded(emptyPositions.size());
+            pos = emptyPositions[index];
+        } else { // 高级：调用 AI 算法
+            pos = findBestMove(); // 关键修改：使用高级算法选点
+            int row=pos.x();
+            int col=pos.y();
+            if(row<0||row>=m_boardSize||col<0||col>=m_boardSize){
+                return;
+            }}
         int row = pos.x();
         int col = pos.y();
-        // 落子
         m_board[row][col] = COMPUTER;
         update();
-        // 检查胜负
-        bool res = isCheckWin(row, col, COMPUTER);
-        if (res) {
+        if (isCheckWin(row, col, COMPUTER)) {
             showGameOverDialog("人机获胜！");
             return;
         }
         switchPlayer();
     }
+}
+// 检查连珠中间是否有阻挡
+bool QiPan::checkObstruction(int row, int col, int dr, int dc, ROLE role) {
+    for (int i = 1; i < 3; ++i) {
+        int r = row + dr * i;
+        int c = col + dc * i;
+        if (r < 0 || r >= m_boardSize || c < 0 || c >= m_boardSize) {
+            return true;
+        }
+        if (m_board[r][c] != role && m_board[r][c] != EMPTY) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// 判断连珠端点是否开放
+bool QiPan::isOpenEnd(int row, int col, int dr, int dc, ROLE role) {
+    // 正向端点（连珠延伸方向）
+    int r = row + dr * 4;
+    int c = col + dc * 4;
+    bool forwardOpen = (r < 0 || r >= m_boardSize || c < 0 || c >= m_boardSize || m_board[r][c] == EMPTY);
+
+    // 反向端点（连珠起始方向的前一个位置）
+    r = row - dr;
+    c = col - dc;
+    bool backwardOpen = (r < 0 || r >= m_boardSize || c < 0 || c >= m_boardSize || m_board[r][c] == EMPTY);
+
+    return forwardOpen || backwardOpen;
+}
+QPoint QiPan::findBestMove() {
+    QVector<QPoint> emptyPositions;
+    for (int i = 0; i < m_boardSize; ++i) {
+        for (int j = 0; j < m_boardSize; ++j) {
+            if (m_board[i][j] == EMPTY) {
+                emptyPositions.append(QPoint(i, j));
+            }
+        }
+    }
+    if (emptyPositions.isEmpty()) return QPoint(-1, -1);
+
+    QVector<int> scores(emptyPositions.size(), 0);
+    for (int idx = 0; idx < emptyPositions.size(); ++idx) {
+        QPoint pos = emptyPositions[idx];
+        int row = pos.x();
+        int col = pos.y();
+
+        // 1. 基础评分：距离中心越近，分数越高
+        int distance = qAbs(row - 7) + qAbs(col - 7);
+        scores[idx] = 100 - distance * 5; // 降低基础评分权重，突出威胁评分
+
+        // 2. 玩家威胁评分（防守优先，权重高于AI进攻）
+        for (int dr = -1; dr <= 1; ++dr) {
+            for (int dc = -1; dc <= 1; dc++) {
+                if (dr == 0 && dc == 0) continue;
+
+                // 玩家活三（连续3子，两端无阻挡）
+                if (checkLine(row, col, dr, dc, PLAYER, 3) && !checkObstruction(row, col, dr, dc, PLAYER)) {
+                    scores[idx] += 100; // 权重高于AI活三
+                }
+                // 玩家冲四（连续4子，一端无阻挡）
+                if (checkLine(row, col, dr, dc, PLAYER, 4) && isOpenEnd(row, col, dr, dc, PLAYER)) {
+                    scores[idx] += 200; // 最高优先级，必须防守
+                }
+                // 玩家4子连珠（必输，直接最高评分）
+                if (checkLine(row, col, dr, dc, PLAYER, 5)) {
+                    scores[idx] += 1000; // 紧急情况，直接堵截
+                }
+            }
+        }
+
+        // 3. AI进攻评分（活三权重50，冲四权重100）
+        for (int dr = -1; dr <= 1; ++dr) {
+            for (int dc = -1; dc <= 1; dc++) {
+                if (dr == 0 && dc == 0) continue;
+
+                // AI活三
+                if (checkLine(row, col, dr, dc, COMPUTER, 3) && !checkObstruction(row, col, dr, dc, COMPUTER)) {
+                    scores[idx] += 50;
+                }
+                // AI冲四
+                if (checkLine(row, col, dr, dc, COMPUTER, 4) && isOpenEnd(row, col, dr, dc, COMPUTER)) {
+                    scores[idx] += 100;
+                }
+            }
+        }
+    }
+
+    // 选择最高分位置
+    auto maxIt = std::max_element(scores.begin(), scores.end());
+    int bestIdx = std::distance(scores.begin(), maxIt);
+    return emptyPositions[bestIdx];
+}
+
+
+// 辅助函数：检查某个方向上是否有连续n个棋子
+bool QiPan::checkLine(int row, int col, int dr, int dc, ROLE role, int count) {
+    int cnt = 0;
+    for (int i = -count + 1; i <= count; ++i) {
+        int r = row + dr * i;
+        int c = col + dc * i;
+        if (r >= 0 && r < m_boardSize && c >= 0 && c < m_boardSize && m_board[r][c] == role) {
+            cnt++;
+            if (cnt >= count) return true;
+        } else {
+            cnt = 0; // 中断后重置计数
+        }
+    }
+    return false;
 }
