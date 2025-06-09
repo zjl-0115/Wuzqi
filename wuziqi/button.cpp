@@ -30,6 +30,11 @@ Button::Button(QiPan* qipan, QWidget *parent)
         btn5->move(650,300);
         btn5->setFixedSize(80,40);
 
+        btn6 = new QPushButton("认输", qipan);
+        btn6->move(650, 350); // 调整至合适位置
+        btn6->setFixedSize(80, 40);
+        connect(btn6, &QPushButton::clicked, this, &Button::resignClicked);
+
         // 连接按钮点击信号到自定义信号
         connect(btn1, &QPushButton::clicked, this, &Button::doublePlayerClicked);
         //connect(btn2, &QPushButton::clicked, this, &Button::computerPlayerClicked);
