@@ -72,6 +72,7 @@ public slots:
     void startDoublePlayerGame();  // 开始双人游戏
     //void startComputerGame();    // 开始人机游戏
     void startComputerGame(int difficulty); // 新增：带难度参数的开始函数
+    void handleResign();
 };
 
 #endif // QIPAN_H
