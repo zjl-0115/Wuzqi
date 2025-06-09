@@ -20,10 +20,12 @@ private:
     QPushButton *btn3;
     QPushButton *btn4;
     QPushButton *btn5;
+    QPushButton *btn6;
 signals:
     void doublePlayerClicked();
     //void computerPlayerClicked();
     void computerPlayerClicked(int difficulty); // 新增：传递难度参数（0=初级，1=高级）
+    void resignClicked(); // 新增认输信号
 
 };
 
