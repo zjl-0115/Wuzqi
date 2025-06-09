@@ -14,7 +14,18 @@
 // F4      .cpp和.h切换
 // F1      帮助文档
 
-
+void QiPan::handleResign() {
+    // 判断游戏模式
+    if (m_gameMode == DOUBLE_PLAYER) {
+        // 双人模式：当前玩家认输，对方获胜
+        QString winner = (m_currentPlayer == PLAYER) ? "玩家2获胜！" : "玩家1获胜！";
+        showGameOverDialog(winner);
+    } else if (m_gameMode == SINGLE_PLAYER) {
+        // 人机模式：玩家认输，电脑获胜
+        showGameOverDialog("人机获胜！");
+    }
+    resetGame(); // 可选择是否重置游戏，或保持结束状态
+}
 QiPan::QiPan(QWidget *parent)
     : QWidget{parent},
     m_hoverRow(-1),
