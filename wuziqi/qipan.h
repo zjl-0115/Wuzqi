@@ -61,7 +61,8 @@ private:
     bool m_hoverFlag;
     int m_difficulty; // 新增：难度参数（0=初级，1=高级）
     QPoint findBestMove(); // 新增：高级难度 AI 算法
-    bool checkLine(int row, int col, int dr, int dc, ROLE role, int count); // 辅助判断连珠
+    bool attackcheckLine(int row, int col, int dr, int dc, ROLE role, int count);    // 辅助判断连珠
+    bool defencecheckLine(int row, int col, int dr, int dc, ROLE role, int count);
     bool checkObstruction(int row, int col, int dr, int dc, ROLE role);
     bool isOpenEnd(int row, int col, int dr, int dc, ROLE role);
 
