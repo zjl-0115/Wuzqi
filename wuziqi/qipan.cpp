@@ -547,19 +547,21 @@ QPoint QiPan::findBestMove() {
                 if (dr == 0 && dc == 0) continue;
 
                 // 玩家活三（连续3子，两端无阻挡）
-                if (checkLine(row, col, dr, dc, PLAYER, 3) && !checkObstruction(row, col, dr, dc, PLAYER)) {
-                    scores[idx] += 100; // 权重高于AI活三
+                if (defencecheckLine(row, col, dr, dc, PLAYER, 3) && !checkObstruction(row, col, dr, dc, PLAYER)) {
+                    scores[idx] += 300; // 权重高于AI活三
+                }
+                //玩家活四
+                if (defencecheckLine(row, col, dr, dc, PLAYER, 4) && !checkObstruction(row, col, dr, dc, PLAYER)) {
+                    scores[idx] += 500; // 高于普通冲四的优先级
                 }
                 // 玩家冲四（连续4子，一端无阻挡）
-                if (checkLine(row, col, dr, dc, PLAYER, 4) && isOpenEnd(row, col, dr, dc, PLAYER)) {
-                    scores[idx] += 200; // 最高优先级，必须防守
-                }
-                // 玩家4子连珠（必输，直接最高评分）
-                if (checkLine(row, col, dr, dc, PLAYER, 5)) {
-                    scores[idx] += 1000; // 紧急情况，直接堵截
+                if (defencecheckLine(row, col, dr, dc, PLAYER, 4) && isOpenEnd(row, col, dr, dc, PLAYER)) {
+                    scores[idx] += 400; // 最高优先级，必须防守
+
                 }
             }
         }
+
 
         // 3. AI进攻评分（活三权重50，冲四权重100）
         for (int dr = -1; dr <= 1; ++dr) {
@@ -567,11 +569,11 @@ QPoint QiPan::findBestMove() {
                 if (dr == 0 && dc == 0) continue;
 
                 // AI活三
-                if (checkLine(row, col, dr, dc, COMPUTER, 3) && !checkObstruction(row, col, dr, dc, COMPUTER)) {
+                if (attackcheckLine(row, col, dr, dc, COMPUTER, 3) && !checkObstruction(row, col, dr, dc, COMPUTER)) {
                     scores[idx] += 50;
                 }
                 // AI冲四
-                if (checkLine(row, col, dr, dc, COMPUTER, 4) && isOpenEnd(row, col, dr, dc, COMPUTER)) {
+                if (attackcheckLine(row, col, dr, dc, COMPUTER, 4) && isOpenEnd(row, col, dr, dc, COMPUTER)) {
                     scores[idx] += 100;
                 }
             }
@@ -586,12 +588,26 @@ QPoint QiPan::findBestMove() {
 
 
 // 辅助函数：检查某个方向上是否有连续n个棋子
-bool QiPan::checkLine(int row, int col, int dr, int dc, ROLE role, int count) {
+bool QiPan::defencecheckLine(int row, int col, int dr, int dc, ROLE role, int count) {
     int cnt = 0;
     for (int i = -count + 1; i <= count; ++i) {
         int r = row + dr * i;
         int c = col + dc * i;
         if (r >= 0 && r < m_boardSize && c >= 0 && c < m_boardSize && m_board[r][c] == role) {
+            cnt++;
+            if (cnt >= count) return true;
+        } else {
+            cnt = 0; // 中断后重置计数
+        }
+    }
+    return false;
+}
+bool QiPan::attackcheckLine(int row, int col, int dr, int dc, ROLE role, int count) {
+    int cnt = 0;
+    for (int i = -count + 1; i <= count; ++i) {
+        int r = row + dr * i;
+        int c = col + dc * i;
+        if (r >= 0 && r < m_boardSize && c >= 0 && c < m_boardSize&&( m_board[r][c] == role||(r==row&&c==col))) {
             cnt++;
             if (cnt >= count) return true;
         } else {
