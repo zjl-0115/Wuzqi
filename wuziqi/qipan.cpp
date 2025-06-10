@@ -14,18 +14,7 @@
 // F4      .cpp和.h切换
 // F1      帮助文档
 
-void QiPan::handleResign() {
-    // 判断游戏模式
-    if (m_gameMode == DOUBLE_PLAYER) {
-        // 双人模式：当前玩家认输，对方获胜
-        QString winner = (m_currentPlayer == PLAYER) ? "玩家2获胜！" : "玩家1获胜！";
-        showGameOverDialog(winner);
-    } else if (m_gameMode == SINGLE_PLAYER) {
-        // 人机模式：玩家认输，电脑获胜
-        showGameOverDialog("人机获胜！");
-    }
-    resetGame(); // 可选择是否重置游戏，或保持结束状态
-}
+
 QiPan::QiPan(QWidget *parent)
     : QWidget{parent},
     m_hoverRow(-1),
@@ -207,7 +196,7 @@ void QiPan::paintEvent(QPaintEvent *event)
     {
         // 设置笔刷
         painter.setBrush(Qt::red);
-        painter.drawEllipse(QPoint(m_margin+m_hoverRow*m_cellSize,m_margin+m_hoverCol*m_cellSize),
+        painter.drawEllipse(QPoint(m_margin + m_hoverCol * m_cellSize, m_margin + m_hoverRow * m_cellSize),
                             m_cellSize/6,m_cellSize/6);
     }
 
@@ -217,13 +206,13 @@ void QiPan::paintEvent(QPaintEvent *event)
             if(m_board[r][c]==PLAYER){
                 // 设置笔刷
                 painter.setBrush(Qt::black);
-                painter.drawEllipse(QPoint(m_margin+r*m_cellSize,m_margin+c*m_cellSize),
+                painter.drawEllipse(QPoint(m_margin + c * m_cellSize, m_margin + r * m_cellSize),
                                     m_cellSize/3,m_cellSize/3);
             }
             else if(m_board[r][c]==COMPUTER||m_board[r][c]==PLAYER2){
                 // 设置笔刷
                 painter.setBrush(Qt::white);
-                painter.drawEllipse(QPoint(m_margin+r*m_cellSize,m_margin+c*m_cellSize),
+                painter.drawEllipse(QPoint(m_margin + c * m_cellSize, m_margin + r * m_cellSize),
                                     m_cellSize/3,m_cellSize/3);
             }
             else{
@@ -240,7 +229,6 @@ void QiPan::paintEvent(QPaintEvent *event)
     if(m_gameMode == DOUBLE_PLAYER) modeText="对局模式：双人对战";
     else if(m_gameMode == SINGLE_PLAYER) modeText="对局模式：人机对战";
     else modeText="请选择对局模式";
-    //QString modeText = m_gameMode == DOUBLE_PLAYER ? "对局模式：双人对战" : "对局模式：人机对战";
     painter.drawText(10, 20, modeText);
 
     // 显示当前玩家
@@ -250,16 +238,16 @@ void QiPan::paintEvent(QPaintEvent *event)
     } else if (m_gameMode == SINGLE_PLAYER) {
         currentPlayerText = m_currentPlayer == PLAYER ? "当前：玩家 (黑棋)" : "当前：电脑 (白棋)";
     }
-    //QString currentPlayerText = m_currentPlayer == PLAYER ? "当前：玩家1 (黑棋)" : "当前：玩家2 (白棋)";
     painter.drawText(200, 20, currentPlayerText);
+
 }
 
 
 // 鼠标移动事件
 void QiPan::mouseMoveEvent(QMouseEvent *event)
 {
-    int row = (event->position().x()-m_margin+(m_cellSize/2))/m_cellSize;
-    int col = (event->position().y()-m_margin+(m_cellSize/2))/m_cellSize;
+    int row = (event->position().y()-m_margin+(m_cellSize/2))/m_cellSize;
+    int col = (event->position().x()-m_margin+(m_cellSize/2))/m_cellSize;
 
 
     if(row>=0&&row<=m_boardSize&&col>=0&&col<=m_boardSize){
@@ -289,8 +277,8 @@ void QiPan::mousePressEvent(QMouseEvent *event)
 {
     //双人对战
     if(m_gameMode==DOUBLE_PLAYER) {
-        int row = (event->position().x()-m_margin+(m_cellSize/2))/m_cellSize;
-        int col = (event->position().y()-m_margin+(m_cellSize/2))/m_cellSize;
+        int row = (event->position().y()-m_margin+(m_cellSize/2))/m_cellSize;
+        int col = (event->position().x()-m_margin+(m_cellSize/2))/m_cellSize;
 
         // 判断鼠标点击是否在棋盘内部
         if(row>=0&&row<m_boardSize&&
@@ -317,8 +305,8 @@ void QiPan::mousePressEvent(QMouseEvent *event)
     }
     //人机对战
     else if (m_gameMode == SINGLE_PLAYER && m_currentPlayer == PLAYER) {
-        int row = (event->position().x() - m_margin + (m_cellSize / 2)) / m_cellSize;
-        int col = (event->position().y() - m_margin + (m_cellSize / 2)) / m_cellSize;
+        int row = (event->position().y() - m_margin + (m_cellSize / 2)) / m_cellSize;
+        int col = (event->position().x() - m_margin + (m_cellSize / 2)) / m_cellSize;
 
         if (row >= 0 && row < m_boardSize &&
             col >= 0 && col < m_boardSize &&
@@ -611,4 +599,17 @@ bool QiPan::checkLine(int row, int col, int dr, int dc, ROLE role, int count) {
         }
     }
     return false;
+}
+
+void QiPan::handleResign() {
+    // 判断游戏模式
+    if (m_gameMode == DOUBLE_PLAYER) {
+        // 双人模式：当前玩家认输，对方获胜
+        QString winner = (m_currentPlayer == PLAYER) ? "玩家2获胜！" : "玩家1获胜！";
+        showGameOverDialog(winner);
+    } else if (m_gameMode == SINGLE_PLAYER) {
+        // 人机模式：玩家认输，电脑获胜
+        showGameOverDialog("人机获胜！");
+    }
+    resetGame(); // 可选择是否重置游戏，或保持结束状态
 }
