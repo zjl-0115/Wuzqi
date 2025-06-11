@@ -63,8 +63,8 @@ private:
     QPoint findBestMove(); // 新增：高级难度 AI 算法
     bool attackcheckLine(int row, int col, int dr, int dc, ROLE role, int count);    // 辅助判断连珠
     bool defencecheckLine(int row, int col, int dr, int dc, ROLE role, int count);
-    bool checkObstruction(int row, int col, int dr, int dc, ROLE role);
-    bool isOpenEnd(int row, int col, int dr, int dc, ROLE role);
+    bool istheotherendempty(int row, int col, int dr, int dc, ROLE role);
+    bool isOpenEnd(int row, int col, int dr, int dc, ROLE role,int count);
 
 
 signals:
