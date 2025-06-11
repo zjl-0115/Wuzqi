@@ -364,8 +364,8 @@ bool QiPan::isCheckWin(int row,int col,ROLE role)
             int nextRow=row+direction[direct][0]*idx;
             int nextCol=col+direction[direct][1]*idx;
 
-            if(nextRow>=0&&nextRow<=m_boardSize&&
-                nextCol>=0&&nextCol<=m_boardSize&&
+            if(nextRow>=0&&nextRow<m_boardSize&&
+                nextCol>=0&&nextCol<m_boardSize&&
                 m_board[nextRow][nextCol]==role)
             {
                 cnt++;
@@ -383,8 +383,8 @@ bool QiPan::isCheckWin(int row,int col,ROLE role)
             int nextRow=row-direction[direct][0]*idx;
             int nextCol=col-direction[direct][1]*idx;
 
-            if(nextRow>=0&&nextRow<=m_boardSize&&
-                nextCol>=0&&nextCol<=m_boardSize&&
+            if(nextRow>=0&&nextRow<m_boardSize&&
+                nextCol>=0&&nextCol<m_boardSize&&
                 m_board[nextRow][nextCol]==role)
             {
                 cnt++;
@@ -491,35 +491,26 @@ void QiPan::computerMove() {
         switchPlayer();
     }
 }
-// 检查连珠中间是否有阻挡
-bool QiPan::checkObstruction(int row, int col, int dr, int dc, ROLE role) {
-    for (int i = 1; i < 3; ++i) {
-        int r = row + dr * i;
-        int c = col + dc * i;
-        if (r < 0 || r >= m_boardSize || c < 0 || c >= m_boardSize) {
-            return true;
-        }
-        if (m_board[r][c] != role && m_board[r][c] != EMPTY) {
-            return true;
-        }
+
+bool QiPan::istheotherendempty(int row, int col, int dr, int dc, ROLE role) {
+    int r=row-dr;
+    int c=col-dc;
+    if(m_board[r][c] == EMPTY){
+        return true;
     }
     return false;
 }
 
 // 判断连珠端点是否开放
-bool QiPan::isOpenEnd(int row, int col, int dr, int dc, ROLE role) {
+bool QiPan::isOpenEnd(int row, int col, int dr, int dc, ROLE role,int count) {
     // 正向端点（连珠延伸方向）
-    int r = row + dr * 4;
-    int c = col + dc * 4;
-    bool forwardOpen = (r < 0 || r >= m_boardSize || c < 0 || c >= m_boardSize || m_board[r][c] == EMPTY);
+    int r = row + dr * (count+1);
+    int c = col + dc * (count+1);
+    bool forwardOpen = (r>0&&r<=m_boardSize&&c>0&&c<=m_boardSize&&m_board[r][c] == EMPTY);
 
-    // 反向端点（连珠起始方向的前一个位置）
-    r = row - dr;
-    c = col - dc;
-    bool backwardOpen = (r < 0 || r >= m_boardSize || c < 0 || c >= m_boardSize || m_board[r][c] == EMPTY);
-
-    return forwardOpen || backwardOpen;
+    return forwardOpen;
 }
+
 QPoint QiPan::findBestMove() {
     QVector<QPoint> emptyPositions;
     for (int i = 0; i < m_boardSize; ++i) {
@@ -547,16 +538,16 @@ QPoint QiPan::findBestMove() {
                 if (dr == 0 && dc == 0) continue;
 
                 // 玩家活三（连续3子，两端无阻挡）
-                if (defencecheckLine(row, col, dr, dc, PLAYER, 3) && !checkObstruction(row, col, dr, dc, PLAYER)) {
+                if (defencecheckLine(row, col, dr, dc, PLAYER, 3) && isOpenEnd(row, col, dr, dc, PLAYER,3)) {
                     scores[idx] += 300; // 权重高于AI活三
                 }
                 //玩家活四
-                if (defencecheckLine(row, col, dr, dc, PLAYER, 4) && !checkObstruction(row, col, dr, dc, PLAYER)) {
-                    scores[idx] += 500; // 高于普通冲四的优先级
+                if (defencecheckLine(row, col, dr, dc, PLAYER, 4) && isOpenEnd(row, col, dr, dc, PLAYER,4)) {
+                    scores[idx] += 800; // 高于普通冲四的优先级
                 }
                 // 玩家冲四（连续4子，一端无阻挡）
-                if (defencecheckLine(row, col, dr, dc, PLAYER, 4) && isOpenEnd(row, col, dr, dc, PLAYER)) {
-                    scores[idx] += 400; // 最高优先级，必须防守
+                if (defencecheckLine(row, col, dr, dc, PLAYER, 4) && !isOpenEnd(row, col, dr, dc, PLAYER,4)) {
+                    scores[idx] += 800; // 最高优先级，必须防守
 
                 }
             }
@@ -569,12 +560,18 @@ QPoint QiPan::findBestMove() {
                 if (dr == 0 && dc == 0) continue;
 
                 // AI活三
-                if (attackcheckLine(row, col, dr, dc, COMPUTER, 3) && !checkObstruction(row, col, dr, dc, COMPUTER)) {
-                    scores[idx] += 50;
-                }
-                // AI冲四
-                if (attackcheckLine(row, col, dr, dc, COMPUTER, 4) && isOpenEnd(row, col, dr, dc, COMPUTER)) {
+                if (attackcheckLine(row, col, dr, dc, COMPUTER, 3) && isOpenEnd(row, col, dr, dc, COMPUTER,2)&&istheotherendempty(row,col,dr,dc,COMPUTER)) {
                     scores[idx] += 100;
+                }
+                // AI活四
+                if (attackcheckLine(row, col, dr, dc, COMPUTER, 4) && isOpenEnd(row, col, dr, dc, COMPUTER,3)&&istheotherendempty(row,col,dr,dc,COMPUTER)) {
+                    scores[idx] += 500;
+                }
+                if (attackcheckLine(row, col, dr, dc, COMPUTER, 4) && isOpenEnd(row, col, dr, dc, COMPUTER,3)&&!istheotherendempty(row,col,dr,dc,COMPUTER)) {
+                    scores[idx] += 200;
+                }
+                if (attackcheckLine(row, col, dr, dc, COMPUTER, 5) ) {
+                    scores[idx] += 1000;
                 }
             }
         }
