@@ -49,8 +49,14 @@ bool QiPan::saveGame(const QString& filePath){
         out<<"CurrentPlayer:"<<(m_currentPlayer==PLAYER?"PLAYER1":"PLAYER2")<<"\n";
     else
         out<<"CurrentPlayer:"<<(m_currentPlayer==PLAYER?"PLAYER":"COMPUTER")<<"\n";
-    //保存棋盘大小
-    out<<"BoardSize:"<<m_boardSize<<"\n";
+    /*//保存棋盘大小
+    out<<"BoardSize:"<<m_boardSize<<"\n";*/
+    
+    if(m_gameMode==SINGLE_PLAYER){
+     out<<"Difficulty:"<<(m_difficulty==0 ? "EASY":"HARD")<<"\n";
+
+    }
+    
     //保存棋盘状态
     out<<"Board:\n";
     for(int i=0;i<m_boardSize;i++){
@@ -113,7 +119,16 @@ bool QiPan::loadGame(const QString& filePath)
         if(size > 0 && size <= 20) // 确保棋盘大小合理
             m_boardSize = size;
     }*/
-
+    if(m_gameMode==SINGLE_PLAYER){
+        line = in.readLine();
+        if(!line.startsWith("Difficulty:")){
+            qDebug()<<"无效的文件格式：找不到当前难度信息";
+            file.close();
+            return false;
+        }
+        QString diffStr = line.split(":").at(1).trimmed();
+        m_difficulty=(diffStr=="EASY" ? 0:1);
+    }
     //找到棋盘数据开始行
     while(!in.atEnd()){
         line = in.readLine();
